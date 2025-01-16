@@ -1,0 +1,42 @@
+Option Explicit
+
+Function ReplaceTextAndSaveAsPDF(wordFilePath As String, pdfFilePath As String, Arr As Variant, idx As Long)
+Dim wdDoc As Object
+Dim textToReplace As String
+Dim replacementText As String
+Dim I As Long
+Dim wdApp As Object
+
+On Error Resume Next
+Set wdApp = GetObject(Class:="Word.Application")
+If wdApp Is Nothing Then Set wdApp = CreateObject(Class:="Word.Application")
+On Error GoTo 0
+wdApp.Visible = True
+
+
+' Define the text to replace and the replacement text
+Set wdDoc = wdApp.Documents.Open(wordFilePath)
+
+For I = 1 To UBound(Arr, 2)
+        
+    textToReplace = "[" & Arr(1, I) & "]"
+    replacementText = Arr(idx, I)
+        
+    With wdDoc.Content.Find
+        .Text = textToReplace
+        .Replacement.Text = replacementText
+        .Forward = True
+        .Wrap = 1
+        .Format = False
+        .MatchCase = True
+        .Execute Replace:=2
+    End With
+Next I
+
+wdDoc.ExportAsFixedFormat OutputFileName:=pdfFilePath, ExportFormat:=17
+wdDoc.Close SaveChanges:=False
+Set wdDoc = Nothing
+wdApp.Quit
+Set wdApp = Nothing
+
+End Function
