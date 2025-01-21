@@ -1,0 +1,85 @@
+Option Explicit
+
+
+Function SendRequest(url As String)
+Dim xhr As Object
+Dim headers As String
+Dim I As Long
+
+' Define the URL and headers
+
+headers = "Accept: application/json, text/plain, */*" & vbCrLf & _
+          "Accept-Encoding: gzip, deflate, br, zstd" & vbCrLf & _
+          "Accept-Language: en-US,en;q=0.9" & vbCrLf & _
+          "Connection: keep-alive" & vbCrLf & _
+          "Host: rest.arbeitsagentur.de" & vbCrLf & _
+          "Origin: https://web.arbeitsagentur.de" & vbCrLf & _
+          "Sec-Ch-Ua: ""Google Chrome"";v=""123"", ""Not:A-Brand"";v=""8"", ""Chromium"";v=""123""" & vbCrLf & _
+          "Sec-Ch-Ua-Mobile: ?0" & vbCrLf & _
+          "Sec-Ch-Ua-Platform: ""Windows""" & vbCrLf & _
+          "Sec-Fetch-Dest: empty" & vbCrLf & _
+          "Sec-Fetch-Mode: cors" & vbCrLf & _
+          "Sec-Fetch-Site: same-site" & vbCrLf & _
+          "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" & vbCrLf & _
+          "X-Api-Key: infosysbub-wbsuche"
+
+' Create a new XMLHttpRequest object
+Set xhr = CreateObject("MSXML2.XMLHTTP")
+
+' Open the connection
+xhr.Open "GET", url, False
+
+' Set the request headers
+Dim headerArray() As String
+headerArray = Split(headers, vbCrLf)
+For I = LBound(headerArray) To UBound(headerArray)
+    Dim headerLine() As String
+    headerLine = Split(headerArray(I), ":")
+    If UBound(headerLine) > 0 Then
+        xhr.setRequestHeader Trim(headerLine(0)), Trim(headerLine(1))
+    End If
+Next I
+
+' Send the request
+xhr.send
+
+' Display the response
+SendRequest = xhr.responseText
+
+' Clean up
+Set xhr = Nothing
+End Function
+
+
+Function ProxyHTTP(url As String)
+
+
+    Dim proxyServer As String
+    Dim proxyUsername As String
+    Dim proxyPassword As String
+    Dim httpRequest As Object
+    Dim responseText As String
+    
+    
+    'reference
+    'https://brightdata.com/cp/zones/datacenter_proxy1/stats
+
+    proxyServer = "brd.superproxy.io:22225"
+    proxyUsername = "brd-customer-hl_933d267e-zone-datacenter_proxy1"
+    proxyPassword = "g2c08dxrbo6a"
+
+    ' Create WinHttp Object
+    Set httpRequest = CreateObject("WinHttp.WinHttpRequest.5.1")
+
+    ' Open connection with proxy settings
+    httpRequest.Open "GET", url, False  ' False for asynchronous
+
+    ' Set proxy details (requires reference to Microsoft Windows Scripting Runtime)
+    httpRequest.setProxy vbUseProxy, proxyServer
+    httpRequest.SetCredentials proxyUsername, proxyPassword, 0
+    httpRequest.send
+
+    responseText = httpRequest.responseText
+    MsgBox responseText
+End Function
+
